@@ -73,6 +73,7 @@ func OutboundRegistry() *outbound.Registry {
 	registry := outbound.NewRegistry()
 
 	direct.RegisterOutbound(registry)
+	registerCFOutbound(registry)
 
 	block.RegisterOutbound(registry)
 
