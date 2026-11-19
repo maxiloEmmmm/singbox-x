@@ -23,6 +23,8 @@
 
 ## UU
 
+UU 的扫码认证、连接信令和端口映射参考了上游的 Linux 控制端与接收端，并在 singbox-x 中用 Go 实现。[VallierDev/uu-remote-linux v0.2.61](https://github.com/VallierDev/uu-remote-linux/releases/tag/v0.2.61)
+
 `uu` 出站通过 UU 端口映射连接所选设备的 SOCKS5 或 mixed 入站。TCP 使用 SOCKS5 转发，UDP 通过 UoT 承载。出站在本机使用私有的回环监听，接收端只向配置指定的本机回环端口转发。
 
 接收端以 `services` 中的一个 Go 服务运行，每个 sing-box 实例只启用一个。接收端可以独立扫码，也可以复用任意已登录的连接账号。多条 `uu` 出站可各自选择账号、设备和端口。
