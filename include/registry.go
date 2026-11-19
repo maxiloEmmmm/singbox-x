@@ -32,6 +32,7 @@ import (
 	"github.com/sagernet/sing-box/protocol/tor"
 	"github.com/sagernet/sing-box/protocol/trojan"
 	"github.com/sagernet/sing-box/protocol/tun"
+	"github.com/sagernet/sing-box/protocol/uu"
 	"github.com/sagernet/sing-box/protocol/vless"
 	"github.com/sagernet/sing-box/protocol/vmess"
 	"github.com/sagernet/sing-box/service/resolved"
@@ -74,6 +75,7 @@ func OutboundRegistry() *outbound.Registry {
 
 	direct.RegisterOutbound(registry)
 	registerCFOutbound(registry)
+	uu.RegisterOutbound(registry)
 
 	block.RegisterOutbound(registry)
 
@@ -131,6 +133,7 @@ func ServiceRegistry() *service.Registry {
 
 	resolved.RegisterService(registry)
 	ssmapi.RegisterService(registry)
+	uu.RegisterService(registry)
 
 	registerDERPService(registry)
 	registerCCMService(registry)
