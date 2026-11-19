@@ -49,7 +49,6 @@ const (
 	cfDatagramReceiveCapacity        = 64
 	cfHeartbeatInterval              = 30 * time.Second
 	cfAPITimeout                     = 10 * time.Second
-	cfAccountID                      = "00000000000000000000000000000000"
 	cfAPIBase                        = "https://api.cloudflare.com/client/v4"
 	cfRuntimeStatusDirectory         = "/run/sboxctl/cf-outbound"
 )
@@ -119,6 +118,8 @@ type cfEndpointResolver struct {
 	fixed string
 	// kvKey is the complete value key such as `cfp/demo`.
 	kvKey string
+	// accountID identifies the Cloudflare account owning the namespace.
+	accountID string
 	// token authenticates Cloudflare API reads and is never logged.
 	token string
 	// namespace is either a stable ID or a human-readable title.
@@ -147,6 +148,8 @@ type cfReporterConfig struct {
 type cfReporter struct {
 	// Type must be `cf_kv`.
 	Type string `yaml:"type"`
+	// AccountID is the Cloudflare account owning the namespace.
+	AccountID string `yaml:"account_id"`
 	// Token is a literal API bearer token.
 	Token string `yaml:"token"`
 	// TokenEnv names the environment variable containing the API token.
@@ -293,6 +296,10 @@ func newCFEndpointResolver(options cfOutboundOptions, physicalDialer N.Dialer) (
 	if (config.Reporter.Token == "") == (config.Reporter.TokenEnv == "") {
 		return nil, fmt.Errorf("CFP reporter must set exactly one of token or token_env")
 	}
+	resolver.accountID = strings.TrimSpace(config.Reporter.AccountID)
+	if !isCFHexIdentifier(resolver.accountID) {
+		return nil, fmt.Errorf("CFP reporter.account_id must be a 32-character hexadecimal ID")
+	}
 	resolver.token = config.Reporter.Token
 	if config.Reporter.TokenEnv != "" {
 		resolver.token = os.Getenv(config.Reporter.TokenEnv)
@@ -330,7 +337,7 @@ func (r *cfEndpointResolver) endpoint(ctx context.Context, force bool) (string, 
 	for index, part := range parts {
 		escaped[index] = url.PathEscape(part)
 	}
-	endpoint := fmt.Sprintf("%s/accounts/%s/storage/kv/namespaces/%s/values/%s", cfAPIBase, cfAccountID, namespaceID, strings.Join(escaped, "/"))
+	endpoint := fmt.Sprintf("%s/accounts/%s/storage/kv/namespaces/%s/values/%s", cfAPIBase, r.accountID, namespaceID, strings.Join(escaped, "/"))
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return "", err
@@ -368,7 +375,7 @@ func (r *cfEndpointResolver) resolveNamespaceLocked(ctx context.Context) (string
 		return r.namespaceID, nil
 	}
 	for page := 1; ; page++ {
-		endpoint := fmt.Sprintf("%s/accounts/%s/storage/kv/namespaces?page=%d&per_page=1000", cfAPIBase, cfAccountID, page)
+		endpoint := fmt.Sprintf("%s/accounts/%s/storage/kv/namespaces?page=%d&per_page=1000", cfAPIBase, r.accountID, page)
 		request, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 		if err != nil {
 			return "", err

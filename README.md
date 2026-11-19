@@ -17,7 +17,7 @@
 }
 ```
 
-- `kv_key` 使用对端发布的完整 Workers KV 键。内核从 CFP 配置读取 namespace 和凭据。配置路径依次取 `config_path`、`CFP_CONFIG`、`/etc/cfp/config.yaml` 或用户配置目录。
+- `kv_key` 使用对端发布的完整 Workers KV 键。内核从 CFP 配置的 `reporter` 读取 `account_id`、`namespace` 和凭据。配置路径依次取 `config_path`、`CFP_CONFIG`、`/etc/cfp/config.yaml` 或用户配置目录。
 - `detour` 可选，指定 KV 查询和 WSS 经由哪个已配置的出站。示例中的 `edge-proxy` 需要按实际出站填写。
 - 已有固定 WSS 地址时可用 `endpoint`。连通后可从 `CF-Ray` 获取接入位置，例如 `HKG`。
 
