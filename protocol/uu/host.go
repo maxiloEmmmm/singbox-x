@@ -408,7 +408,9 @@ func (h *HostService) publish(creds credentials, peers map[string]*hostPeer) err
 						online = true
 						h.setState("online", nil)
 					case "offline":
-						return errors.New("UU 云端将本机标记为离线")
+						// Availability can change while signaling is healthy. Recreating
+						// the room here can make receivers on the same account flap.
+						h.logger.Debug("UU publisher reported offline; keeping signaling open")
 					}
 				}
 			case "be-controlled":
